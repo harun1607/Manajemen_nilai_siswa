@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portal Siswa — Sistem Nilai</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet" />
+  <style>
+    body { background: #fffbf0; font-family: 'Segoe UI', sans-serif; }
+    .topbar {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      padding: 1.5rem 2rem; color: white;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .main-content { max-width: 900px; margin: 0 auto; padding: 2rem 1rem; }
+    .card { border: none; border-radius: 16px; box-shadow: 0 2px 14px rgba(0,0,0,.07); }
+    .profile-card { background: linear-gradient(135deg, #fef3c7, #fff); border-left: 4px solid #f59e0b; }
+    .nilai-card { transition: transform 0.2s; }
+    .nilai-card:hover { transform: translateY(-2px); }
+    .table thead th { background: #fffbf0; font-size: .85rem; font-weight: 600; border: none; }
+    .table td { vertical-align: middle; }
+    .filter-bar { background:#fff; border-radius:12px; padding:1rem 1.5rem; box-shadow:0 2px 8px rgba(0,0,0,.06); margin-bottom:1.5rem; }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <h5 class="mb-0 fw-bold"><i class="bi bi-mortarboard-fill me-2"></i>Portal Nilai Siswa</h5>
+    <small class="opacity-75">Lihat nilai dan status kelulusanmu</small>
+  </div>
+  <div class="d-flex align-items-center gap-3">
+    <span id="navUserInfo" class="small opacity-90"></span>
+    <button class="btn btn-sm btn-light" onclick="logout()"><i class="bi bi-box-arrow-left me-1"></i>Keluar</button>
+  </div>
+</div>
+
+<div class="main-content">
+
+  <!-- Profil Siswa -->
+  <div class="card profile-card p-4 mb-4">
+    <div class="row align-items-center">
+      <div class="col-auto">
+        <div style="width:60px;height:60px;border-radius:50%;background:#f59e0b;display:flex;align-items:center;justify-content:center;font-size:1.8rem;color:white;">
+          <i class="bi bi-person-fill"></i>
+        </div>
+      </div>
+      <div class="col">
+        <h5 class="mb-1 fw-bold" id="profilNama">-</h5>
+        <div class="text-muted small">
+          NIS: <strong id="profilNIS">-</strong> &nbsp;|&nbsp;
+          Kelas: <strong id="profilKelas">-</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter -->
+  <div class="filter-bar d-flex gap-2 flex-wrap align-items-end">
+    <div>
+      <label class="form-label small fw-semibold mb-1">Semester</label>
+      <select class="form-select form-select-sm" id="filterSemester" style="width:130px">
+        <option value="1">Semester 1</option>
+        <option value="2">Semester 2</option>
+      </select>
+    </div>
+    <div>
+      <label class="form-label small fw-semibold mb-1">Tahun Ajaran</label>
+      <input type="text" class="form-control form-control-sm" id="filterTahun" placeholder="2024/2025" style="width:140px" />
+    </div>
+    <button class="btn btn-warning btn-sm" onclick="loadNilai()"><i class="bi bi-search me-1"></i>Tampilkan</button>
+  </div>
+
+  <!-- Ringkasan Status -->
+  <div id="summaryRow" class="row g-3 mb-4 d-none">
+    <div class="col-6 col-md-3">
+      <div class="card text-center p-3">
+        <div class="fs-2 fw-bold text-primary" id="sumMapel">-</div>
+        <div class="text-muted small">Mata Pelajaran</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card text-center p-3">
+        <div class="fs-2 fw-bold text-success" id="sumRataRata">-</div>
+        <div class="text-muted small">Rata-rata Nilai</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card text-center p-3">
+        <div class="fs-2 fw-bold text-success" id="sumLulus">-</div>
+        <div class="text-muted small">Mata Pelajaran Lulus</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card text-center p-3">
+        <div class="fs-2 fw-bold text-danger" id="sumTidakLulus">-</div>
+        <div class="text-muted small">Tidak Lulus</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabel Nilai -->
+  <div class="card">
+    <div class="card-header bg-white border-0 pt-3 pb-0 px-4">
+      <h6 class="fw-bold mb-0"><i class="bi bi-journal-text me-2 text-warning"></i>Detail Nilai</h6>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th class="ps-4">Mata Pelajaran</th>
+              <th>Guru</th>
+              <th>Tugas (30%)</th>
+              <th>UTS (30%)</th>
+              <th>UAS (40%)</th>
+              <th>Nilai Akhir</th>
+              <th>Grade</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="tblNilaiSiswa">
+            <tr><td colspan="8" class="text-center text-muted p-4">Pilih semester dan tahun ajaran lalu tekan Tampilkan.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <p class="text-center text-muted mt-4" style="font-size:.8rem">
+    Sistem Pengolahan Nilai — LSP Skema Programmer &copy; 2025
+  </p>
+</div>
+
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index:9999">
+  <div id="globalToast" class="toast align-items-center text-white bg-success border-0" role="alert">
+    <div class="d-flex"><div class="toast-body"></div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/assets/js/app.js"></script>
+<script>
+  const user = requireAuth(['siswa']);
+
+  // Tampilkan info profil
+  document.getElementById('profilNama').textContent  = user.nama;
+  document.getElementById('profilNIS').textContent   = user.nis;
+  document.getElementById('profilKelas').textContent = user.kelas;
+
+  async function loadNilai() {
+    const semester    = document.getElementById('filterSemester').value;
+    const tahunAjaran = document.getElementById('filterTahun').value.trim();
+
+    if (!tahunAjaran) { showToast('Masukkan tahun ajaran.', 'warning'); return; }
+
+    const res = await apiFetch(`/nilai/my?semester=${semester}&tahunAjaran=${encodeURIComponent(tahunAjaran)}`);
+    const list = res.data.data || [];
+
+    if (list.length === 0) {
+      document.getElementById('tblNilaiSiswa').innerHTML =
+        '<tr><td colspan="8" class="text-center text-muted p-4">Belum ada nilai untuk periode tersebut.</td></tr>';
+      document.getElementById('summaryRow').classList.add('d-none');
+      return;
+    }
+
+    // Hitung ringkasan
+    const total    = list.reduce((s, n) => s + n.nilaiAkhir, 0);
+    const rataRata = Math.round((total / list.length) * 100) / 100;
+    const lulus    = list.filter(n => n.status === 'Lulus').length;
+    const tidakLulus = list.length - lulus;
+
+    document.getElementById('sumMapel').textContent       = list.length;
+    document.getElementById('sumRataRata').textContent    = rataRata;
+    document.getElementById('sumLulus').textContent       = lulus;
+    document.getElementById('sumTidakLulus').textContent  = tidakLulus;
+    document.getElementById('summaryRow').classList.remove('d-none');
+
+    document.getElementById('tblNilaiSiswa').innerHTML = list.map(n => `
+      <tr>
+        <td class="ps-4 fw-semibold">${n.mataPelajaran}</td>
+        <td class="text-muted">${n.guru?.namaGuru || '-'}</td>
+        <td>${n.nilaiTugas}</td>
+        <td>${n.nilaiUTS}</td>
+        <td>${n.nilaiUAS}</td>
+        <td><strong class="text-primary">${n.nilaiAkhir}</strong></td>
+        <td>${getGradeBadge(n.grade)}</td>
+        <td>${getStatusBadge(n.status)}</td>
+      </tr>`).join('');
+  }
+</script>
+</body>
+</html>

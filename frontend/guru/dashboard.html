@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Guru — Sistem Nilai</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet" />
+  <style>
+    body { background: #f0fdf4; font-family: 'Segoe UI', sans-serif; }
+    .sidebar {
+      width: 220px; min-height: 100vh;
+      background: linear-gradient(180deg, #059669, #065f46);
+      position: fixed; top: 0; left: 0; z-index: 100;
+      padding: 1.5rem 1rem;
+    }
+    .sidebar .brand { color: #fff; font-size: 1.1rem; font-weight: 700; margin-bottom: 1.5rem; padding: 0.5rem; }
+    .sidebar .nav-link { color: rgba(255,255,255,0.8); border-radius: 8px; padding: 0.6rem 1rem; margin-bottom: 0.25rem; transition: 0.2s; }
+    .sidebar .nav-link:hover, .sidebar .nav-link.active { background: rgba(255,255,255,0.15); color: #fff; }
+    .main-content { margin-left: 220px; padding: 1.5rem; }
+    .topbar { background:#fff; border-radius:12px; padding:1rem 1.5rem; margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+    .card { border:none; border-radius:14px; box-shadow:0 2px 12px rgba(0,0,0,.06); }
+    .table thead th { background:#f0fdf4; font-size:.85rem; font-weight:600; border:none; }
+    .table td { vertical-align:middle; font-size:.9rem; }
+    .section { display:none; } .section.active { display:block; }
+    .modal-content { border-radius:16px; border:none; }
+    .info-card { background:#fff; border-radius:14px; padding:1.25rem; box-shadow:0 2px 12px rgba(0,0,0,.06); }
+  </style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="brand"><i class="bi bi-mortarboard-fill me-2"></i>NilaiSiswa</div>
+  <nav class="nav flex-column">
+    <a href="#" class="nav-link active" onclick="showSection('dashboard', this)"><i class="bi bi-grid me-2"></i>Dashboard</a>
+    <a href="#" class="nav-link" onclick="showSection('input', this)"><i class="bi bi-pencil-square me-2"></i>Input Nilai</a>
+    <a href="#" class="nav-link" onclick="showSection('rekap', this)"><i class="bi bi-table me-2"></i>Rekap Nilai</a>
+    <hr style="border-color:rgba(255,255,255,0.2)">
+    <a href="#" class="nav-link text-warning" onclick="logout()"><i class="bi bi-box-arrow-left me-2"></i>Keluar</a>
+  </nav>
+</div>
+
+<div class="main-content">
+  <div class="topbar">
+    <h5 class="mb-0 fw-bold text-success" id="pageTitle">Dashboard Guru</h5>
+    <span id="navUserInfo" class="text-muted small"></span>
+  </div>
+
+  <!-- DASHBOARD GURU -->
+  <div id="sec-dashboard" class="section active">
+    <div class="row g-3 mb-4">
+      <div class="col-md-6">
+        <div class="info-card d-flex align-items-center gap-3">
+          <div style="width:48px;height:48px;border-radius:12px;background:rgba(5,150,105,.1);display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#059669;">
+            <i class="bi bi-person-workspace"></i>
+          </div>
+          <div>
+            <div class="fw-bold" id="guruNama">-</div>
+            <div class="text-muted small">ID: <span id="guruId">-</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="info-card d-flex align-items-center gap-3">
+          <div style="width:48px;height:48px;border-radius:12px;background:rgba(245,158,11,.1);display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#f59e0b;">
+            <i class="bi bi-book"></i>
+          </div>
+          <div>
+            <div class="fw-bold" id="guruMapel">-</div>
+            <div class="text-muted small">Mata Pelajaran Diampu</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card p-4">
+      <h6 class="fw-bold mb-3"><i class="bi bi-clock-history me-2 text-success"></i>Nilai Terbaru yang Diinput</h6>
+      <div id="guruRecentNilai"><p class="text-muted">Memuat...</p></div>
+    </div>
+  </div>
+
+  <!-- INPUT NILAI -->
+  <div id="sec-input" class="section">
+    <div class="card p-4">
+      <h6 class="fw-bold mb-4"><i class="bi bi-pencil-square me-2 text-success"></i>Form Input Nilai Siswa</h6>
+      <div class="row g-3">
+        <!-- Kelas guru (readonly, otomatis dari profil) -->
+        <div class="col-md-4">
+          <label class="form-label fw-semibold small">Kelas</label>
+          <div class="input-group">
+            <span class="input-group-text bg-success text-white"><i class="bi bi-building"></i></span>
+            <input type="text" class="form-control fw-bold" id="inputKelasGuru" readonly
+              style="background:#f0fdf4;cursor:not-allowed;" title="Kelas sesuai profil Anda, tidak dapat diubah" />
+          </div>
+          <div class="form-text text-success"><i class="bi bi-lock-fill me-1"></i>Otomatis sesuai kelas yang Anda ampu.</div>
+        </div>
+        <!-- Mata pelajaran guru (readonly, otomatis dari profil) -->
+        <div class="col-md-4">
+          <label class="form-label fw-semibold small">Mata Pelajaran</label>
+          <div class="input-group">
+            <span class="input-group-text bg-success text-white"><i class="bi bi-book"></i></span>
+            <input type="text" class="form-control fw-bold" id="inputMatpelGuru" readonly
+              style="background:#f0fdf4;cursor:not-allowed;" title="Mata pelajaran sesuai profil Anda, tidak dapat diubah" />
+          </div>
+          <div class="form-text text-success"><i class="bi bi-lock-fill me-1"></i>Otomatis sesuai mata pelajaran yang Anda ampu.</div>
+        </div>
+        <!-- Pilih Siswa (filter berdasarkan kelas guru) -->
+        <div class="col-md-4">
+          <label class="form-label fw-semibold small">Pilih Siswa</label>
+          <select class="form-select" id="selectSiswa">
+            <option value="">-- Pilih Siswa --</option>
+          </select>
+          <div class="form-text" id="infoJumlahSiswa"></div>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-semibold small">Semester</label>
+          <select class="form-select" id="inputSemester">
+            <option value="1">Semester 1</option>
+            <option value="2">Semester 2</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-semibold small">Tahun Ajaran</label>
+          <input type="text" class="form-control" id="inputTahun" placeholder="2024/2025" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold small">Nilai Tugas (30%)</label>
+          <input type="number" class="form-control" id="inputTugas" min="0" max="100" placeholder="0-100" oninput="previewNilai()" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold small">Nilai UTS (30%)</label>
+          <input type="number" class="form-control" id="inputUTS" min="0" max="100" placeholder="0-100" oninput="previewNilai()" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold small">Nilai UAS (40%)</label>
+          <input type="number" class="form-control" id="inputUAS" min="0" max="100" placeholder="0-100" oninput="previewNilai()" />
+        </div>
+      </div>
+
+      <!-- Preview Kalkulasi -->
+      <div id="previewBox" class="mt-3 p-3 rounded-3 d-none" style="background:#f0fdf4;border:1px solid #a7f3d0;">
+        <div class="d-flex gap-4 align-items-center flex-wrap">
+          <div class="text-center">
+            <div class="text-muted small">Nilai Akhir</div>
+            <div class="fs-3 fw-bold text-success" id="prevNilaiAkhir">-</div>
+          </div>
+          <div class="text-center">
+            <div class="text-muted small">Grade</div>
+            <div id="prevGrade" class="fs-5 fw-bold">-</div>
+          </div>
+          <div class="text-center">
+            <div class="text-muted small">Status</div>
+            <div id="prevStatus">-</div>
+          </div>
+          <div class="text-muted small flex-fill">
+            <i class="bi bi-calculator me-1"></i>
+            Rumus: (30% × Tugas) + (30% × UTS) + (40% × UAS)
+          </div>
+        </div>
+      </div>
+
+      <div id="inputAlert" class="alert d-none mt-3"></div>
+
+      <button class="btn btn-success mt-3 px-4" id="btnInputNilai" onclick="submitNilai()">
+        <i class="bi bi-save me-2"></i>Simpan Nilai
+      </button>
+    </div>
+  </div>
+
+  <!-- REKAP NILAI -->
+  <div id="sec-rekap" class="section">
+    <div class="card p-3 mb-3">
+      <div class="row g-2 align-items-end">
+        <div class="col-md-4">
+          <label class="form-label small fw-semibold">Kelas</label>
+          <div class="input-group">
+            <span class="input-group-text bg-success text-white"><i class="bi bi-building"></i></span>
+            <input type="text" class="form-control fw-bold" id="rekapKelas" readonly
+              style="background:#f0fdf4;cursor:not-allowed;" title="Kelas sesuai profil Anda" />
+          </div>
+          <div class="form-text text-success"><i class="bi bi-lock-fill me-1"></i>Otomatis sesuai kelas yang Anda ampu.</div>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small fw-semibold">Semester</label>
+          <select class="form-select" id="rekapSemester"><option value="1">1</option><option value="2">2</option></select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small fw-semibold">Tahun Ajaran</label>
+          <input type="text" class="form-control" id="rekapTahun" placeholder="2024/2025" />
+        </div>
+        <div class="col-md-2">
+          <button class="btn btn-success w-100" onclick="loadRekap()"><i class="bi bi-search"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <div id="rekapResult">
+      <div class="card p-4 text-center text-muted">Isi filter lalu tekan tombol cari.</div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL Edit Nilai -->
+<div class="modal fade" id="modalEditNilai" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content p-1">
+      <div class="modal-header border-0"><h5 class="modal-title fw-bold">Edit Nilai</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <input type="hidden" id="editNilaiId" />
+        <p class="text-muted small" id="editNilaiInfo"></p>
+        <div class="mb-3"><label class="form-label fw-semibold small">Nilai Tugas</label><input type="number" class="form-control" id="editTugas" min="0" max="100" /></div>
+        <div class="mb-3"><label class="form-label fw-semibold small">Nilai UTS</label><input type="number" class="form-control" id="editUTS" min="0" max="100" /></div>
+        <div class="mb-3"><label class="form-label fw-semibold small">Nilai UAS</label><input type="number" class="form-control" id="editUAS" min="0" max="100" /></div>
+      </div>
+      <div class="modal-footer border-0">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+        <button class="btn btn-success" onclick="saveEditNilai()"><i class="bi bi-save me-1"></i>Perbarui</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index:9999">
+  <div id="globalToast" class="toast align-items-center text-white bg-success border-0" role="alert">
+    <div class="d-flex"><div class="toast-body"></div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/assets/js/app.js"></script>
+<script>
+  const user = requireAuth(['guru']);
+
+  function showSection(name, el) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById('sec-' + name).classList.add('active');
+    document.querySelectorAll('.sidebar .nav-link').forEach(a => a.classList.remove('active'));
+    if (el) el.classList.add('active');
+    if (name === 'input') loadSiswaDropdown();
+  }
+
+  // ─── DASHBOARD INFO ─────────────────────────────────────────
+  async function loadGuruDashboard() {
+    document.getElementById('guruNama').textContent  = user.nama;
+    document.getElementById('guruId').textContent    = user.idGuru;
+    document.getElementById('guruMapel').textContent = user.mataPelajaran;
+    document.getElementById('guruRecentNilai').innerHTML = '<p class="text-muted small">Gunakan menu Rekap Nilai untuk melihat data.</p>';
+  }
+
+  // ─── INPUT NILAI ─────────────────────────────────────────────
+  async function loadSiswaDropdown() {
+    // Isi field kelas & matpel readonly dari profil guru
+    const kelasGuru  = user.kelas  || '';
+    const matpelGuru = user.mataPelajaran || '';
+    document.getElementById('inputKelasGuru').value  = kelasGuru;
+    document.getElementById('inputMatpelGuru').value = matpelGuru;
+
+    // Ambil semua siswa lalu filter hanya yang kelasnya sama dengan kelas guru
+    const res  = await apiFetch('/siswa');
+    const all  = res.data.data || [];
+    const list = all.filter(s => s.kelas.trim().toLowerCase() === kelasGuru.trim().toLowerCase());
+
+    const sel  = document.getElementById('selectSiswa');
+    sel.innerHTML = '<option value="">-- Pilih Siswa --</option>'
+      + list.map(s => `<option value="${s._id}">${s.nama} (${s.nis})</option>`).join('');
+
+    const info = document.getElementById('infoJumlahSiswa');
+    if (info) info.textContent = list.length > 0
+      ? `${list.length} siswa ditemukan di kelas ${kelasGuru}`
+      : `Belum ada siswa di kelas ${kelasGuru}`;
+  }
+
+  // Preview kalkulasi nilai akhir (Pemrograman Terstruktur — client side)
+  function previewNilai() {
+    const t = parseFloat(document.getElementById('inputTugas').value);
+    const u = parseFloat(document.getElementById('inputUTS').value);
+    const a = parseFloat(document.getElementById('inputUAS').value);
+
+    if (isNaN(t) || isNaN(u) || isNaN(a)) { document.getElementById('previewBox').classList.add('d-none'); return; }
+
+    const akhir = Math.round((0.3 * t + 0.3 * u + 0.4 * a) * 100) / 100;
+    const grade = akhir >= 90 ? 'A' : akhir >= 80 ? 'B' : akhir >= 70 ? 'C' : akhir >= 60 ? 'D' : 'E';
+    const status = akhir >= 70 ? 'Lulus' : 'Tidak Lulus';
+
+    document.getElementById('prevNilaiAkhir').textContent = akhir;
+    document.getElementById('prevGrade').innerHTML = getGradeBadge(grade);
+    document.getElementById('prevStatus').innerHTML = getStatusBadge(status);
+    document.getElementById('previewBox').classList.remove('d-none');
+  }
+
+  async function submitNilai() {
+    const siswaId      = document.getElementById('selectSiswa').value;
+    const mataPelajaran = document.getElementById('inputMatpelGuru').value.trim();
+    const tugas    = parseFloat(document.getElementById('inputTugas').value);
+    const uts      = parseFloat(document.getElementById('inputUTS').value);
+    const uas      = parseFloat(document.getElementById('inputUAS').value);
+    const semester = document.getElementById('inputSemester').value;
+    const tahun    = document.getElementById('inputTahun').value.trim();
+    const btn      = document.getElementById('btnInputNilai');
+    const alertBox = document.getElementById('inputAlert');
+
+    if (!siswaId || isNaN(tugas) || isNaN(uts) || isNaN(uas) || !tahun) {
+      alertBox.className = 'alert alert-warning mt-3';
+      alertBox.textContent = 'Mohon lengkapi semua field nilai.';
+      alertBox.classList.remove('d-none');
+      return;
+    }
+
+    alertBox.classList.add('d-none');
+    setLoadingBtn(btn, true, '<i class="bi bi-save me-2"></i>Simpan Nilai');
+
+    const res = await apiFetch('/nilai', {
+      method: 'POST',
+      body: JSON.stringify({ siswaId, nilaiTugas: tugas, nilaiUTS: uts, nilaiUAS: uas, semester, tahunAjaran: tahun }),
+    });
+
+    setLoadingBtn(btn, false, '<i class="bi bi-save me-2"></i>Simpan Nilai');
+
+    if (res.data.success) {
+      showToast(res.data.message);
+      ['selectSiswa','inputTugas','inputUTS','inputUAS','inputTahun'].forEach(id => document.getElementById(id).value = '');
+      loadSiswaDropdown();
+      document.getElementById('previewBox').classList.add('d-none');
+    } else {
+      alertBox.className = 'alert alert-danger mt-3';
+      alertBox.textContent = res.data.message;
+      alertBox.classList.remove('d-none');
+    }
+  }
+
+  // ─── REKAP NILAI ──────────────────────────────────────────────
+  async function loadRekap() {
+    const kelas = document.getElementById('rekapKelas').value.trim();
+    const sem   = document.getElementById('rekapSemester').value;
+    const tahun = document.getElementById('rekapTahun').value.trim();
+    if (!kelas || !tahun) { showToast('Isi kelas dan tahun ajaran.', 'warning'); return; }
+
+    const res = await apiFetch(`/nilai/laporan?kelas=${encodeURIComponent(kelas)}&semester=${sem}&tahunAjaran=${encodeURIComponent(tahun)}`);
+    const list = res.data.data || [];
+
+    if (list.length === 0) {
+      document.getElementById('rekapResult').innerHTML = '<div class="card p-4 text-center text-muted">Tidak ada data.</div>';
+      return;
+    }
+
+    // Ambil hanya nilai untuk matpel guru ini
+    const rows = list.map(item => {
+     const guruMatpel = Array.isArray(user.mataPelajaran)
+    ? user.mataPelajaran
+    : [user.mataPelajaran];
+
+    const nilaiMatpel = item.nilai.find(n => guruMatpel.includes(n.mataPelajaran));
+      if (!nilaiMatpel) return `
+        <tr>
+          <td>${item.siswa.nis}</td>
+          <td>${item.siswa.nama}</td>
+          <td colspan="6" class="text-muted">Belum diinput</td>
+        </tr>`;
+      return `
+        <tr>
+          <td>${item.siswa.nis}</td>
+          <td>${item.siswa.nama}</td>
+          <td>${nilaiMatpel.nilaiTugas}</td>
+          <td>${nilaiMatpel.nilaiUTS}</td>
+          <td>${nilaiMatpel.nilaiUAS}</td>
+          <td><strong>${nilaiMatpel.nilaiAkhir}</strong></td>
+          <td>${getGradeBadge(nilaiMatpel.grade)}</td>
+          <td>${getStatusBadge(nilaiMatpel.status)}</td>
+          <td>
+            <button class="btn btn-sm btn-outline-warning" 
+              onclick="openEditNilai('${nilaiMatpel._id}','${item.siswa.nama}',${nilaiMatpel.nilaiTugas},${nilaiMatpel.nilaiUTS},${nilaiMatpel.nilaiUAS})">
+              <i class="bi bi-pencil"></i>
+            </button>
+          </td>
+        </tr>`;
+    }).join('');
+
+    document.getElementById('rekapResult').innerHTML = `
+      <div class="card">
+        <div class="card-header bg-success bg-opacity-10 fw-bold">
+          Rekap Nilai ${user.mataPelajaran} — Kelas ${kelas} — Semester ${sem} — TA ${tahun}
+        </div>
+        <div class="card-body p-0">
+          <table class="table table-hover mb-0">
+            <thead><tr><th>NIS</th><th>Nama</th><th>Tugas</th><th>UTS</th><th>UAS</th><th>Akhir</th><th>Grade</th><th>Status</th><th>Edit</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      </div>`;
+  }
+
+  function openEditNilai(id, nama, tugas, uts, uas) {
+    document.getElementById('editNilaiId').value = id;
+    document.getElementById('editNilaiInfo').textContent = `Siswa: ${nama} — ${user.mataPelajaran}`;
+    document.getElementById('editTugas').value = tugas;
+    document.getElementById('editUTS').value   = uts;
+    document.getElementById('editUAS').value   = uas;
+    new bootstrap.Modal(document.getElementById('modalEditNilai')).show();
+  }
+
+  async function saveEditNilai() {
+    const id    = document.getElementById('editNilaiId').value;
+    const tugas = parseFloat(document.getElementById('editTugas').value);
+    const uts   = parseFloat(document.getElementById('editUTS').value);
+    const uas   = parseFloat(document.getElementById('editUAS').value);
+
+    const res = await apiFetch(`/nilai/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ nilaiTugas: tugas, nilaiUTS: uts, nilaiUAS: uas }),
+    });
+
+    if (res.data.success) {
+      bootstrap.Modal.getInstance(document.getElementById('modalEditNilai')).hide();
+      showToast('Nilai berhasil diperbarui.');
+      loadRekap();
+    } else {
+      showToast(res.data.message, 'danger');
+    }
+  }
+
+  loadGuruDashboard();
+
+  // Auto-fill kelas di form rekap dari profil guru
+  document.getElementById('rekapKelas').value = user.kelas || '';
+</script>
+</body>
+</html>

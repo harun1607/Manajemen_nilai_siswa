@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistem Pengolahan Nilai Siswa SMAN 6 Kab.Tangerang</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; color: #1e293b; }
+
+    /* ── NAVBAR ── */
+    .navbar-custom {
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+      padding: 1rem 2rem;
+      position: sticky; top: 0; z-index: 999;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .navbar-brand-custom {
+      font-size: 1.25rem; font-weight: 700; color: #1a56db;
+      display: flex; align-items: center; gap: 0.5rem;
+      text-decoration: none;
+    }
+    .btn-masuk {
+      background: linear-gradient(135deg, #1a56db, #0f3a8a);
+      color: white; border: none; border-radius: 10px;
+      padding: 0.5rem 1.5rem; font-weight: 600;
+      text-decoration: none; transition: all 0.2s;
+      display: inline-flex; align-items: center; gap: 0.4rem;
+    }
+    .btn-masuk:hover {
+      color: white; transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(26,86,219,0.4);
+    }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f3a8a 0%, #1a56db 50%, #2563eb 100%);
+      display: flex; align-items: center; justify-content: center;
+      text-align: center; padding: 6rem 1.5rem 4rem;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-content { position: relative; z-index: 1; max-width: 700px; }
+    .hero-badge {
+      display: inline-block; background: rgba(255,255,255,0.15);
+      color: #bfdbfe; border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 999px; padding: 0.35rem 1rem;
+      font-size: 0.85rem; font-weight: 500; margin-bottom: 1.5rem;
+      backdrop-filter: blur(4px);
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 800; color: white; line-height: 1.15;
+      margin-bottom: 1.25rem;
+    }
+    .hero h1 span { color: #fcd34d; }
+    .hero p {
+      font-size: 1.1rem; color: rgba(255,255,255,0.8);
+      margin-bottom: 2.5rem; line-height: 1.7;
+    }
+    .btn-hero-primary {
+      background: white; color: #1a56db;
+      border: none; border-radius: 12px;
+      padding: 0.85rem 2.5rem; font-size: 1rem; font-weight: 700;
+      text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;
+      transition: all 0.2s; box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    }
+    .btn-hero-primary:hover {
+      color: #0f3a8a; transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+    }
+    .hero-stats {
+      display: flex; justify-content: center; gap: 3rem;
+      margin-top: 3.5rem; flex-wrap: wrap;
+    }
+    .hero-stat { text-align: center; }
+    .hero-stat .number { font-size: 2rem; font-weight: 800; color: #fcd34d; }
+    .hero-stat .label { font-size: 0.8rem; color: rgba(255,255,255,0.65); margin-top: 0.2rem; }
+
+    /* ── FITUR ── */
+    .section { padding: 5rem 1.5rem; }
+    .section-title { text-align: center; margin-bottom: 3rem; }
+    .section-title h2 { font-size: 2rem; font-weight: 800; color: #1e293b; }
+    .section-title p { color: #64748b; margin-top: 0.5rem; font-size: 1rem; }
+    .feature-card {
+      background: white; border-radius: 16px;
+      padding: 2rem; height: 100%;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      transition: transform 0.2s, box-shadow 0.2s;
+      border: 1px solid #f1f5f9;
+    }
+    .feature-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.1);
+    }
+    .feature-icon {
+      width: 56px; height: 56px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; margin-bottom: 1.25rem;
+    }
+    .feature-card h5 { font-weight: 700; margin-bottom: 0.5rem; }
+    .feature-card p { color: #64748b; font-size: 0.92rem; line-height: 1.6; }
+
+    /* ── ROLE ── */
+    .roles-section { background: #f8faff; padding: 5rem 1.5rem; }
+    .role-card {
+      background: white; border-radius: 16px; padding: 2rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      border: 1px solid #e2e8f0; height: 100%;
+      transition: transform 0.2s;
+    }
+    .role-card:hover { transform: translateY(-4px); }
+    .role-avatar {
+      width: 64px; height: 64px; border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem; margin-bottom: 1rem;
+    }
+    .role-card h5 { font-weight: 700; margin-bottom: 0.75rem; }
+    .role-card ul { padding-left: 1.25rem; color: #64748b; font-size: 0.9rem; }
+    .role-card ul li { margin-bottom: 0.4rem; }
+
+    /* ── RUMUS ── */
+    .formula-section { background: linear-gradient(135deg, #1e293b, #0f172a); padding: 5rem 1.5rem; }
+    .formula-box {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px; padding: 2rem;
+      text-align: center; color: white;
+    }
+    .formula-text {
+      font-size: 1.4rem; font-weight: 700; color: #fcd34d;
+      font-family: 'Courier New', monospace; margin: 1rem 0;
+    }
+    .grade-table { margin-top: 2rem; }
+    .grade-badge {
+      display: inline-block; padding: 0.3rem 1rem;
+      border-radius: 999px; font-weight: 700; font-size: 0.9rem;
+    }
+
+    /* ── CTA ── */
+    .cta-section {
+      background: linear-gradient(135deg, #1a56db, #7c3aed);
+      padding: 5rem 1.5rem; text-align: center;
+    }
+    .cta-section h2 { font-size: 2.2rem; font-weight: 800; color: white; margin-bottom: 1rem; }
+    .cta-section p { color: rgba(255,255,255,0.8); font-size: 1.05rem; margin-bottom: 2rem; }
+    .btn-cta {
+      background: white; color: #1a56db;
+      border-radius: 12px; padding: 0.9rem 3rem;
+      font-size: 1.05rem; font-weight: 700;
+      text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;
+      transition: all 0.2s; box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    }
+    .btn-cta:hover { color: #0f3a8a; transform: translateY(-3px); }
+
+    /* ── FOOTER ── */
+    footer {
+      background: #0f172a; color: rgba(255,255,255,0.5);
+      text-align: center; padding: 1.5rem;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar-custom">
+  <a class="navbar-brand-custom" href="#">
+    <i class="bi bi-mortarboard-fill"></i> NilaiSiswa
+  </a>
+  <a href="login.html" class="btn-masuk">
+    <i class="bi bi-box-arrow-in-right"></i> Masuk
+  </a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge"><i class="bi bi-patch-check-fill me-1"></i> LSP Skema Programmer</div>
+    <h1>Sistem Pengolahan <span>Nilai Siswa</span> SMAN 6 Kab.Tangerang</h1>
+    <p>
+      Platform digital untuk mengelola data nilai siswa secara cepat, rapi, dan terstruktur.
+      Dirancang untuk Admin, Guru, dan Siswa dalam satu sistem terintegrasi.
+    </p>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="number">3</div>
+        <div class="label">Role Pengguna</div>
+      </div>
+      <div class="hero-stat">
+        <div class="number">100%</div>
+        <div class="label">Perhitungan Otomatis</div>
+      </div>
+      <div class="hero-stat">
+        <div class="number">OOP</div>
+        <div class="label">+ Pemrograman Terstruktur</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FITUR UTAMA -->
+<section class="section">
+  <div class="container">
+    <div class="section-title">
+      <h2>Fitur Utama Sistem</h2>
+      <p>Semua yang dibutuhkan untuk pengelolaan nilai siswa dalam satu platform</p>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="feature-card">
+          <div class="feature-icon bg-primary bg-opacity-10 text-primary"><i class="bi bi-people-fill"></i></div>
+          <h5>Manajemen Data Siswa</h5>
+          <p>Kelola data siswa lengkap dengan NIS unik, nama, dan kelas. Admin dapat menambah, mengubah, dan menghapus data dengan mudah.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-card">
+          <div class="feature-icon bg-success bg-opacity-10 text-success"><i class="bi bi-pencil-square"></i></div>
+          <h5>Input Nilai Otomatis</h5>
+          <p>Guru menginput nilai Tugas, UTS, dan UAS. Nilai akhir dihitung otomatis dengan rumus yang telah ditentukan beserta grade dan status kelulusan.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-card">
+          <div class="feature-icon bg-warning bg-opacity-10 text-warning"><i class="bi bi-bar-chart-fill"></i></div>
+          <h5>Laporan & Rekap Nilai</h5>
+          <p>Tampilkan laporan nilai per kelas, per semester, dan per tahun ajaran. Lengkap dengan grade A–E dan status lulus atau tidak lulus.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-card">
+          <div class="feature-icon bg-info bg-opacity-10 text-info"><i class="bi bi-shield-lock-fill"></i></div>
+          <h5>Hak Akses Berbasis Role</h5>
+          <p>Tiga role berbeda: Admin dengan akses penuh, Guru untuk input dan rekap nilai, serta Siswa untuk melihat nilai pribadi mereka.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-card">
+          <div class="feature-icon bg-danger bg-opacity-10 text-danger"><i class="bi bi-book-fill"></i></div>
+          <h5>Manajemen Mata Pelajaran</h5>
+          <p>Admin dapat mengelola daftar mata pelajaran yang tersedia di sekolah, lengkap dengan kode dan deskripsi mata pelajaran.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-card">
+          <div class="feature-icon bg-purple bg-opacity-10" style="background:rgba(124,58,237,0.1);color:#7c3aed"><i class="bi bi-database-fill"></i></div>
+          <h5>Database MongoDB</h5>
+          <p>Data tersimpan aman di MongoDB dengan struktur yang terorganisir. Didukung JWT Authentication untuk keamanan akses sistem.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ROLE -->
+<section class="roles-section">
+  <div class="container">
+    <div class="section-title">
+      <h2>Siapa yang Menggunakan?</h2>
+      <p>Sistem ini dirancang untuk tiga jenis pengguna dengan hak akses yang berbeda</p>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="role-card">
+          <div class="role-avatar" style="background:rgba(26,86,219,0.1)"><i class="bi bi-shield-lock-fill" style="color:#1a56db;font-size:2rem"></i></div>
+          <h5>Admin</h5>
+          <ul>
+            <li>Kelola data siswa (CRUD)</li>
+            <li>Kelola data guru (CRUD)</li>
+            <li>Kelola mata pelajaran</li>
+            <li>Lihat dan hapus semua nilai</li>
+            <li>Tampilkan laporan per kelas</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="role-card">
+          <div class="role-avatar" style="background:rgba(5,150,105,0.1)"><i class="bi bi-person-workspace" style="color:#059669;font-size:2rem"></i></div>
+          <h5>Guru</h5>
+          <ul>
+            <li>Input nilai siswa per mata pelajaran</li>
+            <li>Edit nilai yang sudah diinput</li>
+            <li>Lihat rekap nilai per kelas</li>
+            <li>Preview kalkulasi nilai akhir</li>
+            <li>Validasi nilai mata pelajaran</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="role-card">
+          <div class="role-avatar" style="background:rgba(245,158,11,0.1)"><i class="bi bi-person-badge" style="color:#f59e0b;font-size:2rem"></i></div>
+          <h5>Siswa</h5>
+          <ul>
+            <li>Lihat nilai semua mata pelajaran</li>
+            <li>Lihat nilai akhir dan grade</li>
+            <li>Lihat status kelulusan</li>
+            <li>Filter per semester & tahun ajaran</li>
+            <li>Lihat ringkasan rata-rata nilai</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RUMUS NILAI -->
+<section class="formula-section">
+  <div class="container">
+    <div class="section-title mb-4">
+      <h2 style="color:white">Rumus Perhitungan Nilai</h2>
+      <p style="color:rgba(255,255,255,0.6)">Nilai akhir dihitung otomatis berdasarkan bobot yang telah ditentukan</p>
+    </div>
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="formula-box">
+          <p style="color:rgba(255,255,255,0.7);margin-bottom:0.5rem">Formula Nilai Akhir</p>
+          <div class="formula-text">
+            Nilai Akhir = (30% × Tugas) + (30% × UTS) + (40% × UAS)
+          </div>
+          <p style="color:rgba(255,255,255,0.5);font-size:0.85rem">Rentang nilai valid: 0 – 100 &nbsp;|&nbsp; Lulus jika Nilai Akhir ≥ 70</p>
+
+          <div class="grade-table">
+            <p style="color:rgba(255,255,255,0.7);margin-bottom:1rem;font-weight:600">Tabel Grade</p>
+            <div class="d-flex justify-content-center gap-2 flex-wrap">
+              <div class="text-center">
+                <div class="grade-badge" style="background:#22c55e;color:white">A</div>
+                <div style="color:rgba(255,255,255,0.5);font-size:0.75rem;margin-top:0.3rem">≥ 90</div>
+              </div>
+              <div class="text-center">
+                <div class="grade-badge" style="background:#3b82f6;color:white">B</div>
+                <div style="color:rgba(255,255,255,0.5);font-size:0.75rem;margin-top:0.3rem">≥ 80</div>
+              </div>
+              <div class="text-center">
+                <div class="grade-badge" style="background:#f59e0b;color:white">C</div>
+                <div style="color:rgba(255,255,255,0.5);font-size:0.75rem;margin-top:0.3rem">≥ 70</div>
+              </div>
+              <div class="text-center">
+                <div class="grade-badge" style="background:#f97316;color:white">D</div>
+                <div style="color:rgba(255,255,255,0.5);font-size:0.75rem;margin-top:0.3rem">≥ 60</div>
+              </div>
+              <div class="text-center">
+                <div class="grade-badge" style="background:#ef4444;color:white">E</div>
+                <div style="color:rgba(255,255,255,0.5);font-size:0.75rem;margin-top:0.3rem">< 60</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<!--<section class="cta-section">
+  <div class="container">
+    
+  </div>
+</section>-->
+
+<footer>© 2025 Sistem Pengolahan Nilai Siswa — LSP Skema Programmer</footer>
+
+<script>
+  // Jika sudah login, redirect langsung ke dashboard
+  const u = localStorage.getItem('user');
+  if (u) {
+    const user = JSON.parse(u);
+    const map = { admin: '/admin/dashboard.html', guru: '/guru/dashboard.html', siswa: '/siswa/dashboard.html' };
+    if (map[user.role]) window.location.href = map[user.role];
+  }
+</script>
+</body>
+</html>
